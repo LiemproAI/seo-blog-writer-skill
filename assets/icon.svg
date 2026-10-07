@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">SEO Blog Writer</title>
+  <desc id="desc">Biểu tượng tài liệu và bút cho skill viết blog SEO.</desc>
+  <rect width="512" height="512" rx="112" fill="#111827"/>
+  <path d="M142 96h158l70 70v250H142z" fill="#F9FAFB"/>
+  <path d="M300 96v70h70" fill="#D1D5DB"/>
+  <rect x="184" y="216" width="144" height="18" rx="9" fill="#9CA3AF"/>
+  <rect x="184" y="260" width="112" height="18" rx="9" fill="#9CA3AF"/>
+  <rect x="184" y="304" width="128" height="18" rx="9" fill="#9CA3AF"/>
+  <path d="M332 291l48-48c12-12 31-12 43 0s12 31 0 43l-48 48-43-43z" fill="#10B981"/>
+  <path d="M320 303l43 43-74 23z" fill="#059669"/>
+</svg>
