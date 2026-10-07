@@ -45,6 +45,99 @@ flowchart TD
     N --> P["Trả link chỉnh sửa bài"]
 ```
 
+**Chế độ có duyệt:** bạn chọn tiêu đề và duyệt dàn ý trước khi ChatGPT viết tiếp.
+
+**Chế độ tự động:** khi bạn yêu cầu làm toàn bộ tự động, ChatGPT tự chọn tiêu đề và dàn ý, thông báo lựa chọn rồi tiếp tục. Nếu bạn đã cung cấp tiêu đề hoặc dàn ý, skill dùng phần đã chỉ định.
+
+## Workflow từng bước
+
+| Bước | ChatGPT thực hiện | Kết quả / tương tác |
+|---|---|---|
+| 0. Nghiên cứu | Đọc 3–5 nguồn liên quan, xác định ý định tìm kiếm, chủ đề phụ và khoảng trống nội dung | Ghi chú nguồn và hướng triển khai |
+| 1. Tiêu đề | Đề xuất 10 tiêu đề dưới 120 ký tự, dùng từ khóa tự nhiên | Bạn chọn tiêu đề, trừ chế độ tự động |
+| 2. Dàn ý | Lập mặc định 9 H2, mỗi H2 có 2–3 luận điểm | Bạn duyệt dàn ý, trừ chế độ tự động |
+| 3. Viết bài | Viết theo cụm 2–3 H2, ghép và biên tập toàn bài; thêm mở bài, kết luận và 6 FAQ | Bản thảo hoàn chỉnh, có dẫn nguồn và bảng khi phù hợp |
+| 4. Tạo ảnh | Xác định số ảnh, chuẩn bị prompt, tạo lần lượt bằng ChatGPT, kiểm tra từng ảnh | Bộ ảnh, alt và bảng ánh xạ vị trí |
+| 5. Kiểm tra và xuất | Kiểm tra cấu trúc, nguồn, từ khóa, số ảnh và liên kết; viết metadata | File Markdown, HTML khi cần và bộ ảnh có thể truy xuất |
+| 6. WordPress | Tải ảnh thực tế lên Media Library, tạo draft và đọc lại kết quả khi có quyền truy cập | Link sửa bản nháp; nếu chưa kết nối, bàn giao file |
+
+Khi môi trường hỗ trợ subagent, phần viết bài có thể chia cho các agent theo từng cụm H2, rồi biên tập thống nhất. Nếu không có, ChatGPT viết lần lượt trong phiên hiện tại.
+
+## Workflow tạo ảnh hàng loạt
+
+Mỗi ảnh có một prompt riêng. Skill tạo lần lượt, kiểm tra và cập nhật tiến độ để có thể tiếp tục phần còn thiếu khi gặp lỗi hoặc giới hạn công cụ.
+
+```mermaid
+flowchart TD
+    A["Dàn ý và yêu cầu số ảnh"] --> B["Lập danh sách ảnh, prompt và alt"]
+    B --> C{"Còn ảnh chưa hoàn thành?"}
+    C -->|Có| D["Tạo một ảnh bằng ChatGPT"]
+    D --> E{"Tạo ảnh thành công?"}
+    E -->|Có| F{"Ảnh đúng chủ đề và phong cách?"}
+    F -->|Chưa đạt| G["Điều chỉnh prompt hoặc sửa ảnh"]
+    G --> D
+    F -->|Đạt| H["Ghi nhận ảnh và vị trí trong bài"]
+    H --> C
+    E -->|Lỗi hoặc giới hạn| I["Giữ ảnh đã xong, ghi phần thiếu"]
+    I --> J["Bàn giao tiến độ và tiếp tục khi khả dụng"]
+    J --> C
+    C -->|Không| K["Ghép bộ ảnh với bài theo khả năng truy xuất file"]
+```
+
+### Cách tính số ảnh
+
+| Yêu cầu | Số ảnh sẽ tạo |
+|---|---|
+| Bài mặc định 9 H2, không chỉ định số ảnh | 9 ảnh nội dung |
+| Bài 9 H2 và yêu cầu thêm ảnh bìa | 10 ảnh: 9 nội dung + 1 bìa |
+| Bài 4 H2, yêu cầu 3 ảnh nội dung + 1 bìa | 4 ảnh, chọn vị trí minh họa phù hợp nhất |
+| Chỉ định số lượng khác | Phân bổ theo yêu cầu và mục đích minh họa |
+
+- Mặc định ảnh ngang 16:9, phong cách đơn giản và chuyên nghiệp.
+- Không tạo ảnh cho kết luận hoặc FAQ; chỉ thêm bìa khi được yêu cầu.
+- Ảnh lỗi hoặc biến thể bị bỏ không tính vào số ảnh hoàn thành.
+- Nếu chưa truy xuất được file ảnh để ghép vào bài, bàn giao ảnh đã hiển thị và bảng vị trí, đồng thời nêu rõ phần chưa ghép.
+- Với biểu đồ số liệu hoặc sơ đồ cần chính xác, dùng công cụ vẽ/plot phù hợp.
+
+## Bắt đầu sử dụng
+
+Mở skill trong ChatGPT và cung cấp từ khóa cùng các yêu cầu bạn đã biết. Skill chỉ hỏi thêm thông tin còn thiếu có ảnh hưởng thực sự đến bài viết.
+
+### Có duyệt tiêu đề và dàn ý
+
+```text
+Dùng $seo-blog-writer viết bài về “AI marketing cho doanh nghiệp nhỏ”.
+Độc giả: chủ doanh nghiệp Việt Nam.
+Độ dài: khoảng 2.000 từ.
+Cho tôi chọn tiêu đề và duyệt dàn ý trước khi viết.
+Sau đó tạo 5 ảnh nội dung bằng ChatGPT, phong cách minh họa tối giản.
+```
+
+### Làm toàn bộ tự động
+
+```text
+Dùng $seo-blog-writer tạo bài về “cách xây dựng kế hoạch content marketing”.
+Tự chọn tiêu đề và dàn ý, viết khoảng 2.500 từ với 9 H2.
+Tạo 9 ảnh nội dung và 1 ảnh bìa bằng ChatGPT, tỷ lệ 16:9,
+phong cách hiện đại, chuyên nghiệp.
+Xuất Markdown và HTML. Nếu chưa có kết nối WordPress, giao file hoàn chỉnh.
+```
+
+### Tạo bản nháp WordPress
+
+Cung cấp website đích và thiết lập quyền truy cập qua connector hoặc cơ chế xác thực an toàn mà môi trường hỗ trợ. Skill dùng trạng thái **draft** và trả link chỉnh sửa sau khi kiểm tra kết quả. Đăng công khai chỉ khi bạn yêu cầu.
+
+## Công cụ cần có
+
+| Khả năng | Công cụ sử dụng | Khi chưa khả dụng |
+|---|---|---|
+| Nghiên cứu | Tìm kiếm web trong môi trường ChatGPT | Dùng nguồn bạn cung cấp và nêu giới hạn nghiên cứu |
+| Tạo bộ ảnh | Tính năng tạo ảnh tích hợp của ChatGPT | Báo ảnh còn thiếu, giữ prompt và phần đã hoàn thành |
+| Xuất bài | Công cụ file/runtime | Nêu rõ phần chưa xuất được |
+| Tạo draft WordPress | Connector phù hợp hoặc REST API đã cấu hình xác thực | Hoàn thành bản thảo và bộ ảnh có sẵn để bàn giao |
+
+Việc cài skill cung cấp quy trình hướng dẫn; khả năng thực thi phụ thuộc công cụ thực tế trong phiên làm việc. Không cần API key Pexels hay API key tạo ảnh riêng cho tính năng tạo ảnh tích hợp.
+
 ## Cấu trúc repo
 
 | File | Vai trò |
@@ -58,6 +151,9 @@ flowchart TD
 
 - Nguồn và thông tin có thể kiểm chứng; không sao chép bài đối thủ hoặc bịa số liệu.
 - Từ khóa phân bố tự nhiên, không áp mật độ phần trăm cứng.
+- Kiểm tra lại toàn bài để tránh lặp ý giữa các cụm H2.
 - Không hứa thứ hạng tìm kiếm.
 - Không lưu thông tin xác thực trong skill, bài viết hoặc repo.
 - Chỉ báo hoàn thành những bước đã thực hiện và kiểm tra được.
+
+Xem [SKILL.md](SKILL.md) để đọc đầy đủ các quy tắc và xử lý tình huống.
